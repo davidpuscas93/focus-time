@@ -21,12 +21,18 @@ const styles = StyleSheet.create({
   },
 });
 
-const Countdown = ({ minutes = 0.1, isPaused, onProgress, onEnd }) => {
+const Countdown = ({ minutes = 0.25, isPaused, onProgress, onEnd }) => {
   const interval = useRef(null);
+  const timeout = useRef(null);
 
   const [millis, setMillis] = useState(null);
 
-  const reset = () => setMillis(minutesToMillis(minutes));
+  const reset = () => {
+    timeout.current = setTimeout(
+      () => setMillis(Number(minutesToMillis(minutes))),
+      300
+    );
+  };
 
   const countDown = () => {
     setMillis((time) => {
@@ -41,11 +47,11 @@ const Countdown = ({ minutes = 0.1, isPaused, onProgress, onEnd }) => {
   };
 
   useEffect(() => {
-    setMillis(minutesToMillis(minutes));
+    setMillis(Number(minutesToMillis(minutes)));
   }, [minutes]);
 
   useEffect(() => {
-    onProgress(millis / minutesToMillis(minutes));
+    onProgress(millis / Number(minutesToMillis(minutes)));
   }, [millis]);
 
   useEffect(() => {
@@ -56,7 +62,10 @@ const Countdown = ({ minutes = 0.1, isPaused, onProgress, onEnd }) => {
 
     interval.current = setInterval(countDown, 1000);
 
-    return () => clearInterval(interval.current);
+    return () => {
+      clearInterval(interval.current);
+      clearTimeout(timeout.current);
+    };
   }, [isPaused]);
 
   const minute = Math.floor(millis / 1000 / 60) % 60;

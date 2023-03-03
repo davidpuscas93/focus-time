@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     flex: 0.3,
     flexDirection: 'row',
     padding: spacing.md,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   clearWrapper: {
@@ -81,9 +81,16 @@ const styles = StyleSheet.create({
 const Timer = ({ focusSubject, clearSubject, onTimerEnd }) => {
   const [isStarted, setIsStarted] = useState(false);
   const [progress, setProgress] = useState(1);
-  const [minutes, setMinutes] = useState(0.1);
+  const [minutes, setMinutes] = useState(0.25);
 
   useKeepAwake();
+
+  const onProgress = (progress) => {
+    setProgress(progress);
+    if (!isStarted) {
+      setMinutes(progress);
+    }
+  };
 
   const onEnd = (reset) => {
     Vibration.vibrate(PATTERN);
@@ -93,13 +100,33 @@ const Timer = ({ focusSubject, clearSubject, onTimerEnd }) => {
     reset();
   };
 
+  const decrement = () => {
+    let newMinutes = 0;
+    if (minutes > 0.25) {
+      newMinutes = Math.max(0.25, Number(minutes) - 0.25);
+    } else {
+      newMinutes = Math.max(0.05, Number(minutes) - 0.05);
+    }
+    setMinutes(newMinutes);
+  };
+
+  const increment = () => {
+    let newMinutes = 0;
+    if (minutes >= 0.25) {
+      newMinutes = Math.max(0.25, Number(minutes) + 0.25);
+    } else {
+      newMinutes = Math.max(0.05, Number(minutes) + 0.05);
+    }
+    setMinutes(newMinutes);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.countdownWrapper}>
         <Countdown
           minutes={minutes}
           isPaused={!isStarted}
-          onProgress={setProgress}
+          onProgress={onProgress}
           onEnd={onEnd}
         />
         <View style={styles.infoWrapper}>
@@ -115,19 +142,25 @@ const Timer = ({ focusSubject, clearSubject, onTimerEnd }) => {
         />
       </View>
       <View style={styles.timingWrapper}>
-        <Timing onChangeTime={setMinutes} />
+        <Timing
+          onChangeTime={(newMinutes) =>
+            setMinutes((prevMinutes) => prevMinutes + newMinutes)
+          }
+        />
       </View>
       <View style={styles.buttonWrapper}>
+        <RoundedButton title='-' size={50} onPress={decrement} />
         <RoundedButton
           title={isStarted ? 'pause' : 'start'}
           textStyle={{ fontSize: fontSizes.xl }}
           onPress={() => setIsStarted(!isStarted)}
         />
+        <RoundedButton title='+' size={50} onPress={increment} />
       </View>
       <View style={styles.clearWrapper}>
         <RoundedButton
           size={50}
-          title="clear"
+          title='clear'
           textStyle={{ fontSize: fontSizes.sm }}
           onPress={clearSubject}
         />

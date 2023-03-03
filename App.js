@@ -19,6 +19,10 @@ export default function App() {
   const [currentSubject, setCurrentSubject] = useState('null');
   const [history, setHistory] = useState([]);
 
+  const handleTimerEnd = (subject) => {
+    setHistory([...history, subject]);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {!currentSubject ? (
@@ -29,9 +33,7 @@ export default function App() {
       ) : (
         <Timer
           focusSubject={currentSubject}
-          onTimerEnd={(subject) => {
-            setHistory([...history, subject]);
-          }}
+          onTimerEnd={handleTimerEnd}
           clearSubject={() => setCurrentSubject(null)}
         />
       )}
